@@ -8,6 +8,17 @@ class MoviesController < ApplicationController
 
   def index
     @movies = Movie.all
+#@movies = Movie.find(:all, :order => 'title') if params[:sort_by] == 'title'
+    if (params[:sort_by] == 'title')
+      @movies = Movie.all.sort_by {|movie| movie.title}
+      @title_css = 'hilite'
+    elsif (params[:sort_by] == 'date')
+      @movies = Movie.all.sort_by {|movie| movie.release_date}
+      @release_date_css = 'hilite'
+    end
+#    if params[:sort] == "title"
+#    @title_header_css = hilite
+#end
   end
 
   def new
@@ -37,5 +48,9 @@ class MoviesController < ApplicationController
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
   end
+def sort(sort)
+# @movies = Movie.all.sort_by {|movie| movie.title}
+   @movies = Movie.find(:all, :order => sort) if sort == 'title' || 'date'
+end
 
 end
