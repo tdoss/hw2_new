@@ -7,18 +7,34 @@ class MoviesController < ApplicationController
   end
 
   def index
-    @movies = Movie.all
-#@movies = Movie.find(:all, :order => 'title') if params[:sort_by] == 'title'
-    if (params[:sort_by] == 'title')
-      @movies = Movie.all.sort_by {|movie| movie.title}
-      @title_css = 'hilite'
-    elsif (params[:sort_by] == 'date')
-      @movies = Movie.all.sort_by {|movie| movie.release_date}
-      @release_date_css = 'hilite'
+	
+	if (params[:sort_by] != nil)
+		session[:sort_by] = params[:sort_by]
+	end
+    if (session[:sort_by] == 'title')
+    	@movies = Movie.all.sort_by {|movie| movie.title}
+    	session[:title_css] = 'hilite'
+		session[:release_date_css] = nil
+    elsif (session[:sort_by] == 'date')
+    	@movies = Movie.all.sort_by {|movie| movie.release_date}
+		session[:release_date_css] = 'hilite'
+		session[:title_css] = nil
+	else
+		@movies = Movie.all
     end
-#    if params[:sort] == "title"
-#    @title_header_css = hilite
-#end
+	
+	@all_ratings =  @movies.collect {|record| record[:rating]}.uniq
+
+	if (params[:ratings] != nil)
+		puts session[:ratings].inspect
+		session[:ratings] = params[:ratings]
+	end
+
+	if (session[:ratings] != nil)
+		puts session[:ratings].inspect
+		@movies = @movies.collect {|item| item if session[:ratings].keys.include?(item[:rating])}.compact
+	end
+
   end
 
   def new
@@ -48,9 +64,5 @@ class MoviesController < ApplicationController
     flash[:notice] = "Movie '#{@movie.title}' deleted."
     redirect_to movies_path
   end
-def sort(sort)
-# @movies = Movie.all.sort_by {|movie| movie.title}
-   @movies = Movie.find(:all, :order => sort) if sort == 'title' || 'date'
-end
 
 end
